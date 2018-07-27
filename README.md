@@ -8,11 +8,11 @@ This game is brought to you by [@smarx](https://twitter.com/smarx).
 
 As I am new to Solidity, I might have made some mistakes here.
 
-That could be on the way I dealt with some challenges or on technical terms I (didn't) used.
+That could be regarding the way I dealt with some challenges or regarding technical terms I (didn't) used.
 
 I strongly encourage you to double check the information below and send an issue / PR if there is anything not fairly accurate or if you find a prettier workaround !
 
-That said, Lets a go ! :fist:
+That being said, `Lets a go !` :fist:
 
 # Challenge Quests !
 
@@ -22,16 +22,16 @@ That said, Lets a go ! :fist:
 
 ### Deploy a contract
 
-All you have to do is installing [Metamask](https://metamask.io/), switching to the Ropsten test network and getting some ether from the [Ropsten metamask faucet](https://faucet.metamask.io/).
-When you click the `Begin Challenge` button, metamask will be triggered to ask you to send the transaction in order to deploy the contract.
+All you have to do is to install [Metamask](https://metamask.io/), and switch to the Ropsten test network. Next step :point_right: go to [Ropsten metamask faucet](https://faucet.metamask.io/) in order to get some free Ether.
+When you click the `Begin Challenge` button, metamask will be triggered and you'll be asked to send the transaction in order to deploy the contract.
 
 Nailed it :tada:
 
 ### Call me
 
-In order to call the function on the deployed contract, I used [Remix](https://remix.ethereum.org/) wich is pretty easy to use.
+In order to call the function on the deployed contract, I used [Remix](https://remix.ethereum.org/) wich is pretty easy to operate.
 
-You just have to create a file where you copy/paste the contract given on Capture the Ether website. Compile it and go to the Run tab, in the second block section you can load a contract from an existing address or deploy it. After pressing the `Begin Challenge` button, you will be displayed an address, this is this one that you have to copy/paste into the `Load contract from Address` field and press the `At Address` button.
+You just have to create a file where you copy/paste the contract given on Capture the Ether website. Compile it and go to the Run tab, in the second block section you can load a contract from an existing address or deploy it. After pressing the `Begin Challenge` button, an address will be displayed, this is the one that you have to copy/paste into the `Load contract from Address` field and press the `At Address` button.
 
 Then in the Deployed Contracts section you should be able to call the `callme()` function !
 
@@ -72,11 +72,11 @@ contract GuessTheNumberChallenge {
 }
 ```
 
-As we can see in this solidity contract, the answer is stored as it in a global variable named answer.
+As we can see in this Solidity contract, the answer is stored as it in a global variable named `answer`.
 
 > It's time to D-D-D-D-Duel !
 
-That was really not a big deal to find that the number you were thinking of was 42 ! :sunglasses:
+That was really not a big deal to find that the number you were thinking of was ... 42 ! :sunglasses:
 
 ### Guess the secret number
 
@@ -109,7 +109,7 @@ contract GuessTheSecretNumberChallenge {
 ```
 
 As we can't reverse a cryptographic hash, the only way we can find it is brute forcing it.
-Hopefully, it is possible because we only have 256 possibilities ! ( because n is a uint8 so possible values goes from 0 to 255 ).
+Lucky us, we only have 256 possibilities ! ( because n is a uint8 so possible values goes from 0 to 255 ).
 
 Keccak256 is an alias for sha3, so we can use the web3 sha3 function to calculate the hash !
 
@@ -147,6 +147,6 @@ for(i=0;i<256;i++){
 
 > It's time to D-D-D-D-Duel !
 
-I guess the number is 170 ! :sunglasses:
+I guess the number is ... 170 ! :sunglasses:
 
 ### Guess the random number
