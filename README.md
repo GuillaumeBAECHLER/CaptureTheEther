@@ -40,3 +40,43 @@ Then in the Deployed Contracts section you should be able to call the `callme()`
 Same thing as above, you just have to pass an argument next to the function call button.
 Pretty easy.
 
+## Lotteries
+
+### Guess the number
+
+>I’m thinking of a number. All you have to do is guess it.
+
+```javascript
+
+pragma solidity ^0.4.21;
+
+contract GuessTheNumberChallenge {
+    
+    uint8 answer = 42;
+
+    function GuessTheNumberChallenge() public payable {
+        require(msg.value == 1 ether);
+    }
+
+    function isComplete() public view returns (bool) {
+        return address(this).balance == 0;
+    }
+
+    function guess(uint8 n) public payable {
+        require(msg.value == 1 ether);
+        if (n == answer) {
+            msg.sender.transfer(2 ether);
+        }
+    }
+
+}
+```
+
+As we can see in this solidity contract, the answer is stored as it in a global variable named answer.
+
+> It's time to D-D-D-D-Duel !
+
+That was really not a big deal to find that the number you were thinking of was 42 ! :sunglasses:
+
+### Guess the secret number
+
