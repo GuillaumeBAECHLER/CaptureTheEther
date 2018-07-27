@@ -80,3 +80,73 @@ That was really not a big deal to find that the number you were thinking of was 
 
 ### Guess the secret number
 
+>Putting the answer in the code makes things a little too easy.
+>
+>This time I’ve only stored the hash of the number. Good luck reversing a cryptographic hash!
+
+```javascript
+pragma solidity ^0.4.21;
+
+contract GuessTheSecretNumberChallenge {
+    bytes32 answerHash = 0xdb81b4d58595fbbbb592d3661a34cdca14d7ab379441400cbfa1b78bc447c365;
+
+    function GuessTheSecretNumberChallenge() public payable {
+        require(msg.value == 1 ether);
+    }
+    
+    function isComplete() public view returns (bool) {
+        return address(this).balance == 0;
+    }
+
+    function guess(uint8 n) public payable {
+        require(msg.value == 1 ether);
+
+        if (keccak256(n) == answerHash) {
+            msg.sender.transfer(2 ether);
+        }
+    }
+}
+```
+
+As we can't reverse a cryptographic hash, the only way we can find it is brute forcing it.
+Hopefully, it is possible because we only have 256 possibilities ! ( because n is a uint8 so possible values goes from 0 to 255 ).
+
+Keccak256 is an alias for sha3, so we can use the web3 sha3 function to calculate the hash !
+
+Let's do it in our javascript console with a tiny script :
+
+```javascript
+
+const hash = "0xdb81b4d58595fbbbb592d3661a34cdca14d7ab379441400cbfa1b78bc447c365"
+
+for(i=0;i<256;i++){
+  if(web3.sha3(i) == hash){
+    console.log(i)
+  }
+}
+
+```
+
+> No result found !
+
+NO GOD! PLEASE NO!!! What is going on ?
+
+Well... the sha3 function of Solidity is taking arguments in hexadecimal format.
+
+```javascript
+
+const hash = "0xdb81b4d58595fbbbb592d3661a34cdca14d7ab379441400cbfa1b78bc447c365"
+
+for(i=0;i<256;i++){
+  if(web3.sha3(i.toString(16), {encoding: 'hex'}) == hash){
+    console.log(i)
+  }
+}
+
+```
+
+> It's time to D-D-D-D-Duel !
+
+I guess the number is 170 ! :sunglasses:
+
+### Guess the random number
