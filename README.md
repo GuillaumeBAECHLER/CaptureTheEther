@@ -271,9 +271,9 @@ So, again, we have to find `block.blockhash(parentBlockNumber)` and `block.times
 
 > But how can we get the block of a pending transaction ? :thinking:
 
-Well, as transactions are stacked in a [txpool](https://github.com/ethereum/go-ethereum/wiki/Management-APIs#txpool), we don't know in which block they will be mined (we can bet that it will be added in the next pending block but we can't get the timestamp of it).
+Well, as transactions are stacked in a [txpool](https://github.com/ethereum/go-ethereum/wiki/Management-APIs#txpool), we don't know in which block they will be added (we can bet that it will be added in the next pending block but we can't get the timestamp of it, neither we can be sure to be added in the next block).
 
-Hopefully, when a contract makes an internal call to another contract, the block used in the internal call is the block of the main transaction. Knowing that, it is possible for us to call the `GuessTheNewRandomNumberChallenge` with the newly generated number.
+Hopefully, when a contract makes an internal call to another contract, the block used in the internal call is the block of the main transaction. Knowing that, it is possible for us to call the `GuessTheNewRandomNumberChallenge` with the newly generated number by calling it with another contract.
 
 ```javascript
 pragma solidity ^0.4.21;
@@ -311,3 +311,51 @@ contract CallingContract {
     }
 }
 ```
+
+This one was harder, but we did it again ! :sunglasses:
+
+### Predict the future
+
+> This time, you have to lock in your guess before the random number is generated. To give you a sporting chance, there are only ten possible answers.
+> 
+> Note that it is indeed possible to solve this challenge without losing any ether.
+
+```javascript
+pragma solidity ^0.4.21;
+
+contract PredictTheFutureChallenge {
+    address guesser;
+    uint8 guess;
+    uint256 settlementBlockNumber;
+
+    function PredictTheFutureChallenge() public payable {
+        require(msg.value == 1 ether);
+    }
+
+    function isComplete() public view returns (bool) {
+        return address(this).balance == 0;
+    }
+
+    function lockInGuess(uint8 n) public payable {
+        require(guesser == 0);
+        require(msg.value == 1 ether);
+
+        guesser = msg.sender;
+        guess = n;
+        settlementBlockNumber = block.number + 1;
+    }
+
+    function settle() public {
+        require(msg.sender == guesser);
+        require(block.number > settlementBlockNumber);
+
+        uint8 answer = uint8(keccak256(block.blockhash(block.number - 1), now)) % 10;
+
+        guesser = 0;
+        if (guess == answer) {
+            msg.sender.transfer(2 ether);
+        }
+    }
+}
+```
+
