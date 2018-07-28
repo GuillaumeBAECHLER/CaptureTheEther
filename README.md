@@ -22,7 +22,7 @@ That being said, `Lets a go !` :fist:
 
 ### Deploy a contract
 
-All you have to do is to install [Metamask](https://metamask.io/), and switch to the Ropsten test network. Next step :point_right: go to [Ropsten metamask faucet](https://faucet.metamask.io/) in order to get some free Ether.
+All you have to do is to install [Metamask](https://metamask.io/), and switch to the Ropsten test network. Next step :point_right: go to [Metamask faucet](https://faucet.metamask.io/) in order to get some free Ether.
 When you click the `Begin Challenge` button, metamask will be triggered and you'll be asked to send the transaction in order to deploy the contract.
 
 Nailed it :tada:
@@ -131,14 +131,17 @@ for(i=0;i<256;i++){
 
 NO GOD! PLEASE NO!!! What is going on ?
 
-Well... the sha3 function of Solidity is taking arguments in hexadecimal format.
+Well... the sha3 function of Solidity is taking arguments so it fits in the smallest necessary type. So we have to pass the argument as a uint8 ! In hexadecimal, we only need 2 characters in order to have 8 bits. So let's pass our argument as a hexadecimal number !
+
+> Disclaimer : I had to do this workaround because I was using the version of Web3 provided by Metamask. You should consider using web3 1.0 with : `web3Utils.soliditySha3` function.
 
 ```javascript
 
 const hash = "0xdb81b4d58595fbbbb592d3661a34cdca14d7ab379441400cbfa1b78bc447c365"
 
 for(i=0;i<256;i++){
-  if(web3.sha3(i.toString(16), {encoding: 'hex'}) == hash){
+  // Don't forget to padLeft your number so it fits a 2 characters length
+  if(web3.sha3(web3.padLeft(i.toString(16),2), {encoding: 'hex'}) == hash){
     console.log(i)
   }
 }
@@ -150,3 +153,71 @@ for(i=0;i<256;i++){
 I guess the number is ... 170 ! :sunglasses:
 
 ### Guess the random number
+
+> This time the number is generated based on a couple fairly random sources.
+
+```javascript
+pragma solidity ^0.4.21;
+
+contract GuessTheRandomNumberChallenge {
+    uint8 answer;
+
+    function GuessTheRandomNumberChallenge() public payable {
+        require(msg.value == 1 ether);
+        answer = uint8(keccak256(block.blockhash(block.number - 1), now));
+    }
+
+    function isComplete() public view returns (bool) {
+        return address(this).balance == 0;
+    }
+
+    function guess(uint8 n) public payable {
+        require(msg.value == 1 ether);
+
+        if (n == answer) {
+            msg.sender.transfer(2 ether);
+        }
+    }
+}
+```
+
+Well these sources are not really random.
+As the answer is set in the constructor, the block variable refers to the block where the contract was created ( which is the block of the transaction you sent to create the contract ).
+
+> But how do we find the `now` variable ? :thinking:
+
+In Solidity, `now` is an alias for `block.timestamp`! :anguished:
+
+We can see that we have to get block.blockhash(block.number - 1), which is the hash of the parent block.
+
+So basically it means that we have to find :
+
+``` javascript
+
+block.blockhash(parentBlockNumber)
+block.timestamp
+
+```
+We can do it with a little script in our javascript console.
+
+``` javascript
+// Put the transaction hash of the tx you sent in order to create the contract
+var transactionHash = 'YOUR_TX_HASH';
+// web3.eth.getTransaction retrieves a transaction information from hash
+web3.eth.getTransaction(transactionHash, (err, transaction) => {
+  // transaction.blockNumber gives us the block number
+  var blockNumber = transaction.blockNumber;
+  // web3.eth.getBlock retrieves a block from a block number
+  web3.eth.getBlock(blockNumber, (err, block) => {
+    // Here we have the block.timestamp
+    var timestamp = block.timestamp;
+    // And the hash of the parent block is stored in the block element, so we don't have to calculate it
+    var parentBlockHash = block.parentHash;
+    // Because now is a uint (so uint256 by default), we have to pad it so it fits the required length
+    var answerHash = web3.sha3(parentBlockHash + web3.padLeft(timestamp.toString(16), 64), {encoding:'hex'});
+    // Don't forget to put back the hexadimal prefix to the last two characters so web3.toDecimal can correctly convert the input
+    console.log(web3.toDecimal("0x"+answerHash.slice(-2)));
+  });
+});
+
+```
