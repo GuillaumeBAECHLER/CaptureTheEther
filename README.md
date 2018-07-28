@@ -181,7 +181,7 @@ contract GuessTheRandomNumberChallenge {
 }
 ```
 
-Well these sources are not really random.
+Well, these sources are not really random...
 As the answer is set in the constructor, the block variable refers to the block where the contract was created ( which is the block of the transaction you sent to create the contract ).
 
 > But how do we find the `now` variable ? :thinking:
@@ -267,13 +267,13 @@ contract GuessTheNewNumberChallenge {
 ```
 
 In this case we can't rely on a state variable. Every time we call the `guess` function, a new answer number is generated. But this number depends on the same datas we have seen before !
-So we again have to find `block.blockhash(parentBlockNumber)` and `block.timestamp`.
+So, again, we have to find `block.blockhash(parentBlockNumber)` and `block.timestamp`.
 
 > But how can we get the block of a pending transaction ? :thinking:
 
-Well as transactions are stacked in a [txpool](https://github.com/ethereum/go-ethereum/wiki/Management-APIs#txpool), we don't know in which block they will be mined (we can bet that it will be added in the next pending block but we can't get the timestamp of it).
+Well, as transactions are stacked in a [txpool](https://github.com/ethereum/go-ethereum/wiki/Management-APIs#txpool), we don't know in which block they will be mined (we can bet that it will be added in the next pending block but we can't get the timestamp of it).
 
-> Hopefully, when a contract makes an internal call to another contract, the block used in the internal call is the block of the main transaction. Knowing that, it is possible for us to call the `GuessTheNewRandomNumberChallenge` with the newly generated number.
+Hopefully, when a contract makes an internal call to another contract, the block used in the internal call is the block of the main transaction. Knowing that, it is possible for us to call the `GuessTheNewRandomNumberChallenge` with the newly generated number.
 
 ```javascript
 pragma solidity ^0.4.21;
