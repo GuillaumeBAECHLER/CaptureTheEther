@@ -131,6 +131,8 @@ for(i=0;i<256;i++){
 
 NO GOD! PLEASE NO!!! What is going on ?
 
+![No_God_Gif](https://media.giphy.com/media/12XMGIWtrHBl5e/giphy.gif)
+
 Well... the sha3 function of Solidity is taking arguments so it fits in the smallest necessary type. So we have to pass the argument as a uint8 ! In hexadecimal, we only need 2 characters in order to have 8 bits. So let's pass our argument as a hexadecimal number !
 
 > Disclaimer : I had to do this workaround because I was using the version of Web3 provided by Metamask. You should consider using web3 1.0 with : `web3Utils.soliditySha3` function.
