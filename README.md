@@ -473,8 +473,8 @@ contract PredictTheBlockHashChallenge {
 
 This one is pretty easy...
 If you read the documentation of Solidity on the [`blockhash`](https://solidity.readthedocs.io/en/v0.4.24/units-and-global-variables.html?highlight=blockhash#block-and-transaction-properties) function :
-> [blockhash retieves the] hash of the given block - only works for 256 most recent, excluding current, blocks
-If the block is unreachable, `blockhash` returns `0`
+> [blockhash retieves the] hash of the given block - only works for 256 most recent, excluding current, blocks.
+If the block is unreachable, `blockhash` returns `0`.
 
 It is thus enough to call the guess function by passing `0` as argument and to wait 256 blocks...
 
