@@ -425,3 +425,59 @@ Wait for 1 block to be mined (that really doesn't take a lot of time), then try 
 ![Win](https://media.giphy.com/media/l3q2Z6S6n38zjPswo/giphy.gif)
 
 > Got you ! :sunglasses:
+
+### Predict the block hash
+
+> Guessing an 8-bit number is apparently too easy. This time, you need to predict the entire 256-bit block hash for a future block.
+
+```javascript
+
+pragma solidity ^0.4.21;
+
+contract PredictTheBlockHashChallenge {
+    address guesser;
+    bytes32 guess;
+    uint256 settlementBlockNumber;
+
+    function PredictTheBlockHashChallenge() public payable {
+        require(msg.value == 1 ether);
+    }
+
+    function isComplete() public view returns (bool) {
+        return address(this).balance == 0;
+    }
+
+    function lockInGuess(bytes32 hash) public payable {
+        require(guesser == 0);
+        require(msg.value == 1 ether);
+
+        guesser = msg.sender;
+        guess = hash;
+        settlementBlockNumber = block.number + 1;
+    }
+
+    function settle() public {
+        require(msg.sender == guesser);
+        require(block.number > settlementBlockNumber);
+
+        bytes32 answer = block.blockhash(settlementBlockNumber);
+
+        guesser = 0;
+        if (guess == answer) {
+            msg.sender.transfer(2 ether);
+        }
+    }
+}
+
+```
+
+This one is pretty easy...
+If you read the documentation of Solidity on the [`blockhash`](https://solidity.readthedocs.io/en/v0.4.24/units-and-global-variables.html?highlight=blockhash#block-and-transaction-properties) function :
+> [blockhash retieves the] hash of the given block - only works for 256 most recent, excluding current, blocks
+If the block is unreachable, `blockhash` returns `0`
+
+It is thus enough to call the guess function by passing `0` as argument and to wait 256 blocks...
+
+![Win](https://media.giphy.com/media/brHaCdJqCXijm/giphy.gif)
+
+> Nailed it ! :tada:
