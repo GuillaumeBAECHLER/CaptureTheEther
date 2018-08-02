@@ -8,7 +8,7 @@ This game is brought to you by [@smarx](https://twitter.com/smarx).
 
 As I am new to Solidity, I might have made some mistakes here.
 
-That could be regarding the way I dealt with some challenges or regarding technical terms I (didn't) used.
+That could be regarding the way I dealt with some challenges or regarding technical terms I (haven't) used.
 
 I strongly encourage you to double check the information below and send an issue / PR if there is anything not fairly accurate or if you find a prettier workaround !
 
