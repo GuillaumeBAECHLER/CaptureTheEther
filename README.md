@@ -481,4 +481,6 @@ It is thus enough to call the `guess` function by passing `0` as argument and to
 
 ![Win](https://media.giphy.com/media/brHaCdJqCXijm/giphy.gif)
 
+... then to call the `settle` function !
+
 > Nailed it ! :tada:
